@@ -211,11 +211,11 @@ function App() {
 ${trips
   .map(
     (trip) => `
-${trip.id}회차   [상차 , 하차]
+${trip.id}회차    [상차  ,  하차]
 ${trip.rows
   .map(
     (r) =>
-      `${r.place.padEnd(10, " ")} : ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
+      `${r.place.padEnd(10, " ")} : ${(r.load || " ").toString().padEnd(5, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
   )
   .join("\n")}
 상차 합계: ${calculateLoadSum(trip)} EA
@@ -280,7 +280,7 @@ ${trip.rows
               value={date} 
               onChange={(e) => setDate(e.target.value)} 
               // ✅ 수정: 날짜 입력창 너비를 늘림 (130px)
-              style={{ width: '140px' }} 
+              style={{ width: '150px' }} 
             />
         </div>
         
