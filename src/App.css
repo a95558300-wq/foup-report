@@ -1,8 +1,10 @@
+/* --- App.css 전체 코드 --- */
+
 .App {
   text-align: center;
   background-color: #f8f9fa;
   min-height: 100vh;
-  padding: 20px;
+  padding: 10px; /* 모바일에서 좌우 여백을 줄임 */
   font-family: "Pretendard", sans-serif;
 }
 
@@ -10,52 +12,66 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* 상단 입력 필드 (날짜, 호차, 근무 등) 정렬 개선 */
 .form {
   margin-bottom: 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-around; /* 간격을 고르게 분배 */
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px; /* 항목 간 간격 조정 */
+  padding: 0 5px; 
 }
 
+/* 일반 input (사용자 이름) */
 input {
   padding: 6px;
   border-radius: 6px;
   border: 1px solid #ccc;
-  width: 90px;
+  width: 90px; /* 기본 크기 유지 */
 }
 
-.rounds {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* select와 date input 크기 조정 */
+input[type="date"], select {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: auto; 
+  max-width: 100px;
 }
 
+/* 회차 박스 */
 .round-box {
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;
-  width: 90%;
+  width: 100%; /* 최대 너비를 100%로 설정 */
   max-width: 400px;
   margin-bottom: 15px;
-  padding: 15px;
-  text-align: left;
+  padding: 10px; /* 내부 여백 조정 */
+  text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 5px 0;
+/* 테이블 내부 input 요소 스타일 초기화 및 중앙 정렬 */
+/* App.js에서 인라인 스타일로 너비가 설정되었으므로, 여기서는 기본 정렬만 설정 */
+.round-box input[type="text"],
+.round-box input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
 }
 
+
+/* 버튼 스타일 */
 button {
   background-color: #fee500;
   border: none;
   color: #000;
   font-weight: bold;
-  padding: 10px 20px;
+  padding: 10px 15px; /* 모바일에서 패딩을 살짝 줄임 */
   border-radius: 10px;
   cursor: pointer;
 }
@@ -65,7 +81,7 @@ button:hover {
 }
 
 
-/* --- ✅ 모달 및 리스트 스타일 (추가된 부분) --- */
+/* --- 모달 및 리스트 스타일 --- */
 
 .modal-overlay {
   position: fixed;
@@ -90,7 +106,7 @@ button:hover {
 }
 
 .scroll-list {
-  max-height: 300px; /* 스크롤이 생기는 최대 높이 */
+  max-height: 300px;
   overflow-y: auto;
   border: 1px solid #ddd;
   padding: 5px;
@@ -134,15 +150,4 @@ button:hover {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-}
-
-/* 테이블 내부 input 요소 스타일 조정 (필요시) */
-input[type="text"],
-input[type="number"] {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  text-align: center;
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
-// ✅ 모달 컴포넌트 추가
+// ✅ 모달 컴포넌트
 const LoadModal = ({ savedList, onClose, onSelect }) => {
   if (!savedList || savedList.length === 0) return null;
 
@@ -19,7 +19,7 @@ const LoadModal = ({ savedList, onClose, onSelect }) => {
               onClick={() => onSelect(index)}
             >
               <span className="list-date">{item.timestamp}</span>
-              <span className="list-user">({item.username})</span>
+              {/* 사용자 이름은 독립 환경 유지를 위해 표시하지 않음 */}
             </div>
           ))}
         </div>
@@ -36,7 +36,6 @@ function App() {
   useEffect(() => {
     if (window.Kakao) {
       if (!window.Kakao.isInitialized()) {
-        // NOTE: 실제 배포 시에는 보안을 위해 환경 변수로 관리해야 합니다.
         window.Kakao.init("36f94767862cd12d895cdce64ead54cd");
         console.log("✅ Kakao SDK initialized");
       }
@@ -207,15 +206,16 @@ function App() {
 호차: ${busNumber}
 근무시간: ${shift}
 목적지: ${destination || "-"}
+사용자: ${username || "익명"}
 
 ${trips
   .map(
     (trip) => `
-${trip.id}회차     [상차  ,  하차]
+${trip.id}회차     [상차    ,    하차]
 ${trip.rows
   .map(
     (r) =>
-      `${r.place.padEnd(108, " ")} : ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
+      `${r.place.padEnd(8, " ")} , ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
   )
   .join("\n")}
 상차 합계: ${calculateLoadSum(trip)} EA
@@ -340,6 +340,8 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "place", e.target.value)
                       }
+                      // ✅ 모바일 최적화 인라인 스타일
+                      style={{ width: '60px', textAlign: 'center' }} 
                     />
                   </td>
                   <td>
@@ -349,6 +351,8 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "load", e.target.value)
                       }
+                      // ✅ 모바일 최적화 인라인 스타일
+                      style={{ width: '45px', textAlign: 'center' }} 
                     />
                   </td>
                   <td>
@@ -358,6 +362,8 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "unload", e.target.value)
                       }
+                      // ✅ 모바일 최적화 인라인 스타일
+                      style={{ width: '45px', textAlign: 'center' }} 
                     />
                   </td>
                 </tr>
