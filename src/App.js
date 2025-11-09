@@ -229,7 +229,7 @@ ${trips
   .map(
     (trip) => {
         // 헤더는 영문 약자로 변경하여 정렬 유지
-        const header = `${trip.id}회차    [LOAD , UNLOAD]`;
+        const header = `${trip.id}회차    [상차 , 하차]`;
         
         const rowsFormatted = trip.rows
             .map(
@@ -240,7 +240,7 @@ ${trips
                     const padding = " ".repeat(Math.max(0, spaceNeeded));
                     
                     // ✅ 가변 공백을 적용한 포맷
-                    return `${placeText}${padding} : ${(r.load || " ").toString().padEnd(5, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`;
+                    return `${placeText}${padding} : ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`;
                 }
             )
             .join("\n");
