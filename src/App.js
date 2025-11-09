@@ -280,7 +280,7 @@ ${trip.rows
               value={date} 
               onChange={(e) => setDate(e.target.value)} 
               // ✅ 수정: 날짜 입력창 너비를 늘림 (130px)
-              style={{ width: '150px' }} 
+              style={{ width: '170px' }} 
             />
         </div>
         
