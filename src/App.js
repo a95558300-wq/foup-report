@@ -16,13 +16,18 @@ function App() {
     }
   }, []);
 
-  // ✅ FOUP 운행일지 기본 상태
+  // ✅ 사용자 이름
+  const [username, setUsername] = useState("");
+
+  // ✅ 기본 상태
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
   const [busNumber, setBusNumber] = useState("1호차");
   const [shift, setShift] = useState("DAY");
   const [destination, setDestination] = useState("");
-  const [trips, setTrips] = useState([
+
+  // ✅ 회차별 초기 데이터
+  const defaultTrips = [
     {
       id: 1,
       rows: [
@@ -45,7 +50,9 @@ function App() {
         { place: "12/13L", load: "", unload: "" },
       ],
     },
-  ]);
+  ];
+
+  const [trips, setTrips] = useState(defaultTrips);
 
   // ✅ 입력 변경
   const handleInputChange = (tripId, index, field, value) => {
@@ -81,14 +88,60 @@ function App() {
     );
   };
 
+  // ✅ 회차 전체 추가 / 삭제
+  const handleAddTrip = () => {
+    const newId = trips.length > 0 ? trips[trips.length - 1].id + 1 : 1;
+    const newTrip = {
+      id: newId,
+      rows: [
+        { place: "P3", load: "", unload: "" },
+        { place: "P2", load: "", unload: "" },
+        { place: "P1", load: "", unload: "" },
+        { place: "M1", load: "", unload: "" },
+        { place: "U1", load: "", unload: "" },
+        { place: "12/13L", load: "", unload: "" },
+      ],
+    };
+    setTrips((prev) => [...prev, newTrip]);
+  };
+
+  const handleRemoveTrip = () => {
+    if (trips.length > 1) {
+      setTrips((prev) => prev.slice(0, -1));
+    }
+  };
+
   // ✅ 합계 계산
   const calculateLoadSum = (trip) =>
     trip.rows.reduce((sum, row) => sum + (parseInt(row.load || 0, 10) || 0), 0);
-
   const totalLoadSum = trips.reduce(
     (sum, trip) => sum + calculateLoadSum(trip),
     0
   );
+
+  // ✅ 사용자별 저장
+  const handleSave = () => {
+    if (!username.trim()) {
+      alert("⚠️ 사용자 이름을 입력해주세요.");
+      return;
+    }
+    localStorage.setItem(`foup_trips_${username}`, JSON.stringify(trips));
+    alert(`✅ ${username}님의 데이터가 저장되었습니다.`);
+  };
+
+  const handleLoad = () => {
+    if (!username.trim()) {
+      alert("⚠️ 사용자 이름을 입력해주세요.");
+      return;
+    }
+    const saved = localStorage.getItem(`foup_trips_${username}`);
+    if (saved) {
+      setTrips(JSON.parse(saved));
+      alert(`📂 ${username}님의 데이터를 불러왔습니다.`);
+    } else {
+      alert("⚠️ 저장된 데이터가 없습니다.");
+    }
+  };
 
   // ✅ 카카오톡 공유
   const handleKakaoShare = () => {
@@ -106,18 +159,19 @@ function App() {
 ${trips
   .map(
     (trip) => `
-${trip.id}회차     [상차  |  하차]
+${trip.id}회차     [상차    ,    하차]
 ${trip.rows
   .map(
     (r) =>
-      `${r.place.padEnd(8, " ")} | ${(r.load || " ").toString().padEnd(4, " ")} | ${(r.unload || " ").toString().padEnd(4, " ")}`
+      `${r.place.padEnd(8, " ")} : ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
   )
   .join("\n")}
 상차 합계: ${calculateLoadSum(trip)} EA
 `
   )
   .join("\n")}
-총 상차 합계: ${totalLoadSum} EA`;
+총 상차 합계: ${totalLoadSum} EA
+총 회차: ${trips.length}회`;
 
     window.Kakao.Share.sendDefault({
       objectType: "text",
@@ -129,19 +183,34 @@ ${trip.rows
     });
   };
 
-  // ✅ UI
   return (
     <div
       style={{
         maxWidth: "750px",
         margin: "0 auto",
-        padding: "30px 20px", // 🔹 공백(패딩) 추가
+        padding: "30px 20px",
         backgroundColor: "#fafafa",
         borderRadius: "12px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
       <h2 style={{ textAlign: "center", fontWeight: "bold" }}>📦 FOUP 운행일지</h2>
+
+      {/* ✅ 사용자 이름 입력 */}
+      <div style={{ textAlign: "center", marginBottom: "15px" }}>
+        <input
+          type="text"
+          placeholder="사용자 이름을 입력하세요"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={{
+            padding: "6px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            width: "60%",
+          }}
+        />
+      </div>
 
       {/* 상단 입력 */}
       <div
@@ -266,31 +335,8 @@ ${trip.rows
           </table>
 
           <div style={{ textAlign: "center", marginTop: "10px" }}>
-            <button
-              onClick={() => handleRemoveRow(trip.id)}
-              style={{
-                border: "1px solid #555",
-                background: "white",
-                padding: "5px 10px",
-                marginRight: "5px",
-                cursor: "pointer",
-                borderRadius: "4px",
-              }}
-            >
-              -
-            </button>
-            <button
-              onClick={() => handleAddRow(trip.id)}
-              style={{
-                border: "1px solid #555",
-                background: "white",
-                padding: "5px 10px",
-                cursor: "pointer",
-                borderRadius: "4px",
-              }}
-            >
-              +
-            </button>
+            <button onClick={() => handleRemoveRow(trip.id)}> - </button>
+            <button onClick={() => handleAddRow(trip.id)}> + </button>
           </div>
 
           <p
@@ -305,11 +351,28 @@ ${trip.rows
         </div>
       ))}
 
+      {/* ✅ 총합 및 회차수 */}
       <h3 style={{ textAlign: "center", marginTop: "20px" }}>
         총 상차 합계: {totalLoadSum} EA
       </h3>
+      <h4 style={{ textAlign: "center", color: "#333" }}>
+        총 회차: {trips.length}회
+      </h4>
 
+      {/* ✅ 회차 전체 제어 */}
+      <div style={{ textAlign: "center", marginTop: "10px" }}>
+        <button onClick={handleAddTrip}>➕ 회차 추가</button>
+        <button onClick={handleRemoveTrip} style={{ marginLeft: "10px" }}>
+          ➖ 회차 삭제
+        </button>
+      </div>
+
+      {/* ✅ 저장 / 불러오기 / 공유 */}
       <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button onClick={handleSave}>💾 저장</button>
+        <button onClick={handleLoad} style={{ marginLeft: "10px" }}>
+          📂 불러오기
+        </button>
         <button
           onClick={handleKakaoShare}
           style={{
@@ -317,6 +380,7 @@ ${trip.rows
             border: "none",
             borderRadius: "10px",
             padding: "10px 20px",
+            marginLeft: "10px",
             cursor: "pointer",
             fontWeight: "bold",
           }}
@@ -324,7 +388,6 @@ ${trip.rows
           📤 카카오톡으로 공유
         </button>
 
-        {/* ✅ 회사명 및 개발자명 추가 */}
         <p style={{ marginTop: "15px", fontWeight: "bold" }}>(주)진로지스</p>
         <p style={{ marginTop: "3px", fontSize: "14px", color: "#555" }}>
           앱 개발자: 최원석
