@@ -201,12 +201,12 @@ function App() {
       return;
     }
 
+    // ✅ 수정: 사용자 이름 항목 제거
     const message = `📋 FOUP 운행일지
 날짜: ${date}
 호차: ${busNumber}
 근무시간: ${shift}
 목적지: ${destination || "-"}
-사용자: ${username || "익명"}
 
 ${trips
   .map(
@@ -265,18 +265,23 @@ ${trip.rows
       <div
         style={{
           display: "flex",
-          // ✅ 수정: space-between 대신 중앙 정렬 및 갭 사용
           justifyContent: "center", 
-          gap: "15px", // 항목 간 간격을 넓힘
+          gap: "15px", 
           marginBottom: "10px",
-          flexWrap: "wrap", // 줄 바꿈 허용
+          flexWrap: "wrap", 
           alignItems: "center",
           padding: "0 5px"
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <label>날짜</label>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: '120px' }} />
+            <input 
+              type="date" 
+              value={date} 
+              onChange={(e) => setDate(e.target.value)} 
+              // ✅ 수정: 날짜 입력창 너비를 늘림 (130px)
+              style={{ width: '130px' }} 
+            />
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -359,7 +364,6 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "place", e.target.value)
                       }
-                      // ✅ 모바일 최적화 인라인 스타일 (CSS에서 상속되지 않도록 명시)
                       style={{ width: '60px', textAlign: 'center' }} 
                     />
                   </td>
@@ -370,7 +374,6 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "load", e.target.value)
                       }
-                      // ✅ 모바일 최적화 인라인 스타일
                       style={{ width: '45px', textAlign: 'center' }} 
                     />
                   </td>
@@ -381,7 +384,6 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "unload", e.target.value)
                       }
-                      // ✅ 모바일 최적화 인라인 스타일
                       style={{ width: '45px', textAlign: 'center' }} 
                     />
                   </td>
