@@ -261,45 +261,64 @@ ${trip.rows
         />
       </div>
 
-      {/* 상단 입력 */}
+      {/* 상단 입력 (날짜, 호차, 근무, 목적지) */}
       <div
         style={{
           display: "flex",
-          gap: "8px",
-          justifyContent: "space-between",
+          // ✅ 수정: space-between 대신 중앙 정렬 및 갭 사용
+          justifyContent: "center", 
+          gap: "15px", // 항목 간 간격을 넓힘
           marginBottom: "10px",
-          flexWrap: "wrap",
+          flexWrap: "wrap", // 줄 바꿈 허용
           alignItems: "center",
+          padding: "0 5px"
         }}
       >
-        <label>날짜</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <label>호차</label>
-        <select
-          value={busNumber}
-          onChange={(e) => setBusNumber(e.target.value)}
-        >
-          {Array.from({ length: 100 }, (_, i) => (
-            <option key={i} value={`${i + 1}호차`}>
-              {i + 1}호차
-            </option>
-          ))}
-        </select>
-        <label>근무</label>
-        <select value={shift} onChange={(e) => setShift(e.target.value)}>
-          <option value="DAY">DAY</option>
-          <option value="SW">SW</option>
-          <option value="GY">GY</option>
-        </select>
-        <label>목적지</label>
-        <select
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-        >
-          <option value="">선택</option>
-          <option value="기흥">기흥</option>
-          <option value="천안">천안</option>
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <label>날짜</label>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: '120px' }} />
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <label>호차</label>
+            <select
+              value={busNumber}
+              onChange={(e) => setBusNumber(e.target.value)}
+              style={{ width: '80px' }}
+            >
+              {Array.from({ length: 100 }, (_, i) => (
+                <option key={i} value={`${i + 1}호차`}>
+                  {i + 1}호차
+                </option>
+              ))}
+            </select>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <label>근무</label>
+            <select 
+              value={shift} 
+              onChange={(e) => setShift(e.target.value)}
+              style={{ width: '70px' }}
+            >
+              <option value="DAY">DAY</option>
+              <option value="SW">SW</option>
+              <option value="GY">GY</option>
+            </select>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <label>목적지</label>
+            <select
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              style={{ width: '80px' }}
+            >
+              <option value="">선택</option>
+              <option value="기흥">기흥</option>
+              <option value="천안">천안</option>
+            </select>
+        </div>
       </div>
 
       {/* 회차별 테이블 */}
@@ -340,7 +359,7 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "place", e.target.value)
                       }
-                      // ✅ 모바일 최적화 인라인 스타일
+                      // ✅ 모바일 최적화 인라인 스타일 (CSS에서 상속되지 않도록 명시)
                       style={{ width: '60px', textAlign: 'center' }} 
                     />
                   </td>
