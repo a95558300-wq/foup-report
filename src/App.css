@@ -63,3 +63,86 @@ button {
 button:hover {
   background-color: #ffeb3b;
 }
+
+
+/* --- ✅ 모달 및 리스트 스타일 (추가된 부분) --- */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.scroll-list {
+  max-height: 300px; /* 스크롤이 생기는 최대 높이 */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 5px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.list-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item:hover {
+  background-color: #f0f0f0;
+}
+
+.list-date {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.list-user {
+  font-size: 12px;
+  color: #777;
+}
+
+.modal-close-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 테이블 내부 input 요소 스타일 조정 (필요시) */
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}

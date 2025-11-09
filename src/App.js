@@ -1,33 +1,57 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+// ✅ 모달 컴포넌트 추가
+const LoadModal = ({ savedList, onClose, onSelect }) => {
+  if (!savedList || savedList.length === 0) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ borderBottom: "2px solid #ccc", paddingBottom: "10px" }}>
+          📂 불러올 데이터 선택
+        </h3>
+        <div className="scroll-list">
+          {savedList.map((item, index) => (
+            <div
+              key={index}
+              className="list-item"
+              onClick={() => onSelect(index)}
+            >
+              <span className="list-date">{item.timestamp}</span>
+              <span className="list-user">({item.username})</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={onClose} className="modal-close-btn">
+          닫기
+        </button>
+      </div>
+    </div>
+  );
+};
+
 function App() {
-  // ✅ 카카오 SDK 초기화
+  // ✅ Kakao SDK 초기화
   useEffect(() => {
     if (window.Kakao) {
       if (!window.Kakao.isInitialized()) {
-        window.Kakao.init("36f94767862cd12d895cdce64ead54cd"); // ✅ 원석님 JS 키
-        console.log("✅ Kakao SDK initialized:", window.Kakao.isInitialized());
-      } else {
-        console.log("ℹ️ Kakao SDK already initialized");
+        // NOTE: 실제 배포 시에는 보안을 위해 환경 변수로 관리해야 합니다.
+        window.Kakao.init("36f94767862cd12d895cdce64ead54cd");
+        console.log("✅ Kakao SDK initialized");
       }
     } else {
-      console.warn("⚠️ Kakao SDK not found on window. Check index.html script tag.");
+      console.warn("⚠️ Kakao SDK not found");
     }
   }, []);
 
-  // ✅ 사용자 이름
   const [username, setUsername] = useState("");
-
-  // ✅ 기본 상태
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
   const [busNumber, setBusNumber] = useState("1호차");
   const [shift, setShift] = useState("DAY");
   const [destination, setDestination] = useState("");
-
-  // ✅ 회차별 초기 데이터
-  const defaultTrips = [
+  const [trips, setTrips] = useState([
     {
       id: 1,
       rows: [
@@ -50,11 +74,13 @@ function App() {
         { place: "12/13L", load: "", unload: "" },
       ],
     },
-  ];
+  ]);
+  
+  // ✅ 모달 상태 추가
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [savedUserList, setSavedUserList] = useState([]);
 
-  const [trips, setTrips] = useState(defaultTrips);
 
-  // ✅ 입력 변경
   const handleInputChange = (tripId, index, field, value) => {
     const updatedTrips = trips.map((trip) => {
       if (trip.id === tripId) {
@@ -67,7 +93,6 @@ function App() {
     setTrips(updatedTrips);
   };
 
-  // ✅ 줄 추가 / 삭제
   const handleAddRow = (tripId) => {
     setTrips((prev) =>
       prev.map((trip) =>
@@ -88,7 +113,6 @@ function App() {
     );
   };
 
-  // ✅ 회차 전체 추가 / 삭제
   const handleAddTrip = () => {
     const newId = trips.length > 0 ? trips[trips.length - 1].id + 1 : 1;
     const newTrip = {
@@ -111,7 +135,6 @@ function App() {
     }
   };
 
-  // ✅ 합계 계산
   const calculateLoadSum = (trip) =>
     trip.rows.reduce((sum, row) => sum + (parseInt(row.load || 0, 10) || 0), 0);
   const totalLoadSum = trips.reduce(
@@ -119,31 +142,60 @@ function App() {
     0
   );
 
-  // ✅ 사용자별 저장
+  // ✅ 저장 시 현재 사용자 이름과 함께 기록
   const handleSave = () => {
-    if (!username.trim()) {
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
       alert("⚠️ 사용자 이름을 입력해주세요.");
       return;
     }
-    localStorage.setItem(`foup_trips_${username}`, JSON.stringify(trips));
-    alert(`✅ ${username}님의 데이터가 저장되었습니다.`);
+    // 사용자별 독립된 키 사용
+    const key = `foup_trips_${trimmedUsername}`;
+    const savedList = JSON.parse(localStorage.getItem(key) || "[]");
+    const timestamp = new Date().toLocaleString();
+    
+    // 저장되는 데이터에 현재 사용자 이름 추가
+    savedList.push({ 
+        timestamp, 
+        username: trimmedUsername, // 사용자 이름 저장
+        trips 
+    });
+    
+    localStorage.setItem(key, JSON.stringify(savedList));
+    alert(`✅ ${trimmedUsername}님의 ${timestamp} 데이터가 저장되었습니다.`);
   };
 
-  const handleLoad = () => {
-    if (!username.trim()) {
+  // ✅ 선택 불러오기 기능 (모달 열기)
+  const handleOpenLoadModal = () => {
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
       alert("⚠️ 사용자 이름을 입력해주세요.");
       return;
     }
-    const saved = localStorage.getItem(`foup_trips_${username}`);
-    if (saved) {
-      setTrips(JSON.parse(saved));
-      alert(`📂 ${username}님의 데이터를 불러왔습니다.`);
-    } else {
+    const key = `foup_trips_${trimmedUsername}`;
+    const savedList = JSON.parse(localStorage.getItem(key) || "[]");
+    
+    if (savedList.length === 0) {
       alert("⚠️ 저장된 데이터가 없습니다.");
+      return;
+    }
+
+    // 현재 사용자 데이터만 모달에 표시
+    setSavedUserList(savedList); 
+    setIsModalOpen(true);
+  };
+
+  // ✅ 모달에서 데이터 선택 처리
+  const handleSelectData = (index) => {
+    if (savedUserList[index]) {
+        const selectedData = savedUserList[index];
+        setTrips(selectedData.trips);
+        alert(`📂 ${selectedData.timestamp} 데이터를 불러왔습니다.`);
+        setIsModalOpen(false); // 모달 닫기
     }
   };
 
-  // ✅ 카카오톡 공유
+
   const handleKakaoShare = () => {
     if (!window.Kakao || !window.Kakao.isInitialized()) {
       alert("⚠️ 카카오 SDK가 아직 준비되지 않았습니다.");
@@ -159,11 +211,11 @@ function App() {
 ${trips
   .map(
     (trip) => `
-${trip.id}회차     [상차    ,    하차]
+${trip.id}회차     [상차  ,  하차]
 ${trip.rows
   .map(
     (r) =>
-      `${r.place.padEnd(8, " ")} : ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
+      `${r.place.padEnd(108, " ")} : ${(r.load || " ").toString().padEnd(4, " ")} , ${(r.unload || " ").toString().padEnd(4, " ")}`
   )
   .join("\n")}
 상차 합계: ${calculateLoadSum(trip)} EA
@@ -176,10 +228,7 @@ ${trip.rows
     window.Kakao.Share.sendDefault({
       objectType: "text",
       text: message,
-      link: {
-        mobileWebUrl: window.location.href,
-        webUrl: window.location.href,
-      },
+      link: { mobileWebUrl: window.location.href, webUrl: window.location.href },
     });
   };
 
@@ -196,7 +245,7 @@ ${trip.rows
     >
       <h2 style={{ textAlign: "center", fontWeight: "bold" }}>📦 FOUP 운행일지</h2>
 
-      {/* ✅ 사용자 이름 입력 */}
+      {/* 사용자 이름 */}
       <div style={{ textAlign: "center", marginBottom: "15px" }}>
         <input
           type="text"
@@ -223,19 +272,12 @@ ${trip.rows
           alignItems: "center",
         }}
       >
-        <label style={{ fontWeight: "bold" }}>날짜</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          style={{ flex: "1", padding: "5px", minWidth: "120px" }}
-        />
-
-        <label style={{ fontWeight: "bold" }}>호차</label>
+        <label>날짜</label>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <label>호차</label>
         <select
           value={busNumber}
           onChange={(e) => setBusNumber(e.target.value)}
-          style={{ flex: "1", padding: "5px", minWidth: "100px" }}
         >
           {Array.from({ length: 100 }, (_, i) => (
             <option key={i} value={`${i + 1}호차`}>
@@ -243,23 +285,16 @@ ${trip.rows
             </option>
           ))}
         </select>
-
-        <label style={{ fontWeight: "bold" }}>근무</label>
-        <select
-          value={shift}
-          onChange={(e) => setShift(e.target.value)}
-          style={{ flex: "1", padding: "5px", minWidth: "80px" }}
-        >
+        <label>근무</label>
+        <select value={shift} onChange={(e) => setShift(e.target.value)}>
           <option value="DAY">DAY</option>
           <option value="SW">SW</option>
           <option value="GY">GY</option>
         </select>
-
-        <label style={{ fontWeight: "bold" }}>목적지</label>
+        <label>목적지</label>
         <select
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          style={{ flex: "1", padding: "5px", minWidth: "100px" }}
         >
           <option value="">선택</option>
           <option value="기흥">기흥</option>
@@ -267,7 +302,7 @@ ${trip.rows
         </select>
       </div>
 
-      {/* 회차별 표 */}
+      {/* 회차별 테이블 */}
       {trips.map((trip) => (
         <div
           key={trip.id}
@@ -285,7 +320,6 @@ ${trip.rows
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              marginTop: "10px",
               textAlign: "center",
             }}
           >
@@ -306,7 +340,6 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "place", e.target.value)
                       }
-                      style={{ width: "90%" }}
                     />
                   </td>
                   <td>
@@ -316,7 +349,6 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "load", e.target.value)
                       }
-                      style={{ width: "90%" }}
                     />
                   </td>
                   <td>
@@ -326,7 +358,6 @@ ${trip.rows
                       onChange={(e) =>
                         handleInputChange(trip.id, index, "unload", e.target.value)
                       }
-                      style={{ width: "90%" }}
                     />
                   </td>
                 </tr>
@@ -339,27 +370,15 @@ ${trip.rows
             <button onClick={() => handleAddRow(trip.id)}> + </button>
           </div>
 
-          <p
-            style={{
-              textAlign: "center",
-              fontWeight: "bold",
-              marginTop: "10px",
-            }}
-          >
+          <p style={{ textAlign: "center", fontWeight: "bold" }}>
             상차 합계: {calculateLoadSum(trip)} EA
           </p>
         </div>
       ))}
 
-      {/* ✅ 총합 및 회차수 */}
-      <h3 style={{ textAlign: "center", marginTop: "20px" }}>
-        총 상차 합계: {totalLoadSum} EA
-      </h3>
-      <h4 style={{ textAlign: "center", color: "#333" }}>
-        총 회차: {trips.length}회
-      </h4>
+      <h3 style={{ textAlign: "center" }}>총 상차 합계: {totalLoadSum} EA</h3>
+      <h4 style={{ textAlign: "center" }}>총 회차: {trips.length}회</h4>
 
-      {/* ✅ 회차 전체 제어 */}
       <div style={{ textAlign: "center", marginTop: "10px" }}>
         <button onClick={handleAddTrip}>➕ 회차 추가</button>
         <button onClick={handleRemoveTrip} style={{ marginLeft: "10px" }}>
@@ -367,12 +386,19 @@ ${trip.rows
         </button>
       </div>
 
-      {/* ✅ 저장 / 불러오기 / 공유 */}
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
+      {/* ✅ 버튼 간격 조정 및 정렬 */}
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "30px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "15px", // 버튼 간격 증가
+        }}
+      >
         <button onClick={handleSave}>💾 저장</button>
-        <button onClick={handleLoad} style={{ marginLeft: "10px" }}>
-          📂 불러오기
-        </button>
+        <button onClick={handleOpenLoadModal}>📂 선택 불러오기</button>
         <button
           onClick={handleKakaoShare}
           style={{
@@ -380,9 +406,8 @@ ${trip.rows
             border: "none",
             borderRadius: "10px",
             padding: "10px 20px",
-            marginLeft: "10px",
-            cursor: "pointer",
             fontWeight: "bold",
+            marginTop: "10px", // 카카오톡 버튼 상단 간격 추가
           }}
         >
           📤 카카오톡으로 공유
@@ -393,6 +418,15 @@ ${trip.rows
           앱 개발자: 최원석
         </p>
       </div>
+      
+      {/* ✅ 모달 렌더링 */}
+      {isModalOpen && (
+        <LoadModal
+          savedList={savedUserList}
+          onClose={() => setIsModalOpen(false)}
+          onSelect={handleSelectData}
+        />
+      )}
     </div>
   );
 }
