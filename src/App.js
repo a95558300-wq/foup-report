@@ -103,15 +103,14 @@ function App() {
 근무시간: ${shift}
 목적지: ${destination || "-"}
 
-[상차 | 하차]
 ${trips
   .map(
     (trip) => `
-${trip.id}회차
+${trip.id}회차     [상차  |  하차]
 ${trip.rows
   .map(
     (r) =>
-      `${r.place.padEnd(6, " ")} | ${r.load || "-"} | ${r.unload || "-"}`
+      `${r.place.padEnd(8, " ")} | ${(r.load || " ").toString().padEnd(4, " ")} | ${(r.unload || " ").toString().padEnd(4, " ")}`
   )
   .join("\n")}
 상차 합계: ${calculateLoadSum(trip)} EA
